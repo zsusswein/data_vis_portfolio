@@ -1,0 +1,11 @@
+---
+title: "Portfolio Project"
+---
+
+This website is the _End of Semester Portfolio_ for **MATH-225: Data Visualization & Graphics**. I took **MATH-225** in Spring 2019 (my junior spring).  
+
+This website has five sections, each a different project, displaying the range of work done in the class -- from simple bar charts up to choroploths and data munging with the tidyverse. Each page describes the overrarching goal of the analysis, the data used, any data processing, and all of the graphs. All code is included and inline comments explain any substantial manipulation (i.e. beyond $z$-scoring).  
+
+
+A note: all the work here comes from various labs and projects, many of which were done in groups. I do my best to thank any group members at the end of the relevant page, but my apologies to anyone I missed!
+

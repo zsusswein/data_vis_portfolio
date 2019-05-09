@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Choropleths</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">MATH-225: Data Visualization  & Graphics Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="bar_graphs.html">Bar graphs</a>
+</li>
+<li>
+  <a href="line_graphs.html">Line graphs</a>
+</li>
+<li>
+  <a href="choropleths.html">Choropleths</a>
+</li>
+<li>
+  <a href="scatterplots.html">Scatterplots</a>
+</li>
+<li>
+  <a href="final_project.html">Final project</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Choropleths</h1>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This project looked at the rate of stop and frisk reports in Washington DC across both age and gender as well as at national crime rates across the country.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> The plots use shapefiles of Washington DC police districts and service areas,<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>, stop and frisk reports,<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> and national crime rate statistics.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> All shapefiles and raw data used are on the associated Github repo.</p>
+<pre class="r"><code># Libraries
+library(tidyverse)
+library(lubridate)
+library(broom)
+library(rgdal)
+library(gpclib)
+library(maptools)
+gpclibPermit()
+library(maptools)
+library(treemap)
+
+# Data
+sf_data &lt;- read_csv(&quot;sf.csv&quot;)
+sf_data_2017 &lt;- read_csv(&quot;sf2017.csv&quot;)
+
+crime_data &lt;- read_csv(&#39;CrimeStatebyState.csv&#39;)
+districts &lt;- readOGR(&quot;Police_Districts.shp&quot;,layer=&quot;Police_Districts&quot;)</code></pre>
+</div>
+<div id="data-cleaning" class="section level1">
+<h1>Data cleaning</h1>
+<p>To clean the data I set age breaks for stop and frisk reports, associated each stop with a location (service district or district), and then summed the number of reports.</p>
+<pre class="r"><code># bind them together
+sf_data &lt;- rbind(sf_data,sf_data_2017) %&gt;% 
+   mutate(date = mdy(Report_taken_date_EST),
+                  Type=as.factor(`Data Type`),
+                  Gender=as.factor(Subject_Sex),
+                  Ethnicity=as.factor(Subject_Ethnicity),
+                  Race=as.factor(Subject_Race),
+                  District=as.factor(`Incident Location District`),
+                  PSA=as.factor(`Incident Location PSA`),
+                  Year=as.factor(Year)) %&gt;%
+  mutate(num_age = ifelse(Age==&quot;Juvenile&quot;|Age==&quot;Unknown&quot;,NA,as.numeric(Age))) %&gt;%
+  mutate(cat_age = cut(num_age, 
+                       breaks=c(17,27,37,47,57,67,77,87),
+                       labels=c(&quot;18-27&quot;,&quot;28-37&quot;,&quot;38-47&quot;,
+                                                  &quot;48-57&quot;,&quot;58-67&quot;,&quot;68-77&quot;,
+                                                  &quot;78-87&quot;))) %&gt;%
+  mutate(cat_age = ifelse(Age==&quot;Juvenile&quot;|Age==&quot;Unknown&quot;, Age,
+                                            as.character(cat_age))) %&gt;% 
+  mutate(Age_binned=as.factor(cat_age)) %&gt;% 
+  mutate(Age=fct_relevel(Age,&quot;Juvenile&quot;),
+                  Age_binned=fct_relevel(Age_binned,&quot;Juvenile&quot;)) %&gt;%
+  mutate(Month=month(date,label=T,abbr=F))
+
+remove(sf_data_2017)
+
+# defining districts as &quot;id&quot; variable
+names(districts@data)[1] &lt;- &quot;id&quot;
+
+# extracting the lat/long coordinates of district boundary points
+# telling the tidy function that the region value can be found in the &quot;id&quot; variable
+districts.points &lt;- tidy(districts, region=&quot;id&quot;)
+
+# combine lat/long coordinates of district boundary points with data about districts
+districts.cart &lt;- full_join(districts.points, districts@data, by=&quot;id&quot;)
+
+# import geospatial data about Police Service Areas
+psas &lt;- readOGR(&quot;Police_Service_Areas.shp&quot;,layer=&quot;Police_Service_Areas&quot;)
+
+# extracting the lat/long coordinates of PSA boundary points
+# telling the tidy function that the region value can be found in the &quot;PSA&quot; variable
+psas.points &lt;- tidy(psas, region=&quot;PSA&quot;)
+
+# combine lat/long coordinates of district boundary points with data about districts
+# tell join function that &quot;id&quot; in psas.points corresponds to &quot;PSA&quot; in psas@data
+psas.cart &lt;- full_join(psas.points, psas@data, by=c(&quot;id&quot; = &quot;PSA&quot;))</code></pre>
+<div id="visualizations" class="section level2">
+<h2>Visualizations</h2>
+<pre class="r"><code># A panel of maps showing the number of stop and frisk reports in each police service area faceted by gender
+plot_data &lt;- filter(sf_data,!is.na(District), Subject_Sex == &#39;Male&#39;| Subject_Sex == &#39;Female&#39;)
+levels(plot_data$Subject_Sex) &lt;- c(&#39;Male&#39;, &#39;Female&#39;)
+
+all_cats &lt;- expand(plot_data,PSA,Year)
+
+plot_data &lt;- summarize(group_by(plot_data, PSA,Year,Subject_Sex),reports=n())
+
+plot_data &lt;- full_join(plot_data,all_cats,by=c(&quot;PSA&quot;,&quot;Year&quot;))
+
+plot_data &lt;- mutate(plot_data,reports=replace_na(reports,0))
+
+names(plot_data)[1] &lt;- &quot;NAME&quot;
+
+mapdata &lt;- full_join(plot_data,psas.cart,by=&quot;NAME&quot;)
+levels(mapdata$Subject_Sex) &lt;- c(&#39;Male&#39;, &#39;Female&#39;)
+
+ggplot() +
+  geom_polygon(data=drop_na(mapdata), aes(x=long, y=lat, group=group,fill=reports),color=&quot;black&quot;) +
+  coord_map()+
+  labs(title = &#39;Panel of Stop and Frisk reports per service area faceted by gender&#39;)+
+  scale_fill_distiller(palette=&quot;Spectral&quot;, name=&quot;Number of Reports&quot;)+
+  facet_wrap(~Subject_Sex)+
+  theme(axis.line=element_blank(),axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),legend.position=&quot;none&quot;,
+          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),plot.background=element_blank())</code></pre>
+<p><img src="choropleths_files/figure-html/plot%201-1.png" width="672" /></p>
+<pre class="r"><code># A panel of maps showing the number of stop and frisk reports in each police district faceted by age group
+plot_data &lt;- filter(sf_data,!is.na(District), !Age_binned == &quot;Unknown&quot;)
+plot_data$Age_binned &lt;- factor(plot_data$Age_binned)
+
+levels(plot_data$District) &lt;- c(&quot;First District&quot;,&quot;Second District&quot;,
+                                &quot;Third District&quot;,&quot;Fourth District&quot;,
+                                &quot;Fifth District&quot;,&quot;Sixth District&quot;,
+                                &quot;Seventh District&quot;)
+
+all_cats &lt;- expand(plot_data,District,Year)
+
+plot_data &lt;-summarize(group_by(plot_data, District,Year, Age_binned, .drop=FALSE), reports=n())
+
+
+plot_data &lt;- full_join(plot_data,all_cats,by=c(&quot;District&quot;,&quot;Year&quot;))
+
+names(plot_data)[1] &lt;- &quot;NAME&quot;
+
+mapdata &lt;- full_join(plot_data,districts.cart,by=&quot;NAME&quot;)
+
+ggplot() +
+  geom_polygon(data=mapdata,
+               aes(x=long, y=lat, group=group,fill=reports),color=&quot;black&quot;) +
+  coord_map()+
+  theme_void()+
+  labs(title = &#39;Panel of Stop and Frisk reports per police district faceted by age group&#39;)+
+  scale_fill_distiller(palette=&quot;Spectral&quot;, name=&quot;Number of Reports&quot;,na.value=&quot;grey&quot;)+
+  facet_wrap(vars(Age_binned))+
+  theme(axis.line=element_blank(),axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),legend.position=&quot;none&quot;,
+          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),plot.background=element_blank())</code></pre>
+<p><img src="choropleths_files/figure-html/plot%202-1.png" width="672" /></p>
+<pre class="r"><code>crime_2013 &lt;- filter(crime_data,Year==2013, State!=&quot;United States-Total&quot;) %&gt;% 
+  rename(region=State) %&gt;% 
+  mutate(region=tolower(region))
+
+all_states &lt;- map_data(&quot;state&quot;)
+
+stateData &lt;- left_join(all_states,crime_2013,by=&quot;region&quot;)
+
+ggplot()+
+  geom_polygon(data=stateData,
+               aes(x=long, y=lat, group = group, fill=`Robbery rate`),
+               color=&quot;grey50&quot;)+
+  scale_fill_distiller(palette=&quot;Oranges&quot;,  limits = c(0, 200),direction=1, na.value = &#39;white&#39;)+
+  labs(title = &#39;Choropleth of the Robbery Rate by State in 2013&#39;)+
+  coord_map()+
+  theme(axis.line=element_blank(),axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),legend.position=&quot;none&quot;,
+          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),plot.background=element_blank())</code></pre>
+<p><img src="choropleths_files/figure-html/plot%203-1.png" width="672" /></p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>The maps show that the stop and frisk rate in DC varies strongly with geographic location, age, and gender. Stops occur most often in eastern DC and to young males. Females are much less likely to be stopped than males in all parts of DC. Similarly, the rate of stops drops off dramatically for people above the age of 40.</p>
+<p>The third visualization, of robberies across the US by state, shows that robberies are geographically heterogenous. Nevada has by far the most robberies per person. Aside from this outlier, states with a large urban population are much more likely to have a high robbery rate per person (e.g. Illinois).</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>These plots are based on an in-class case study developed by Dr. Nicole Meyer.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>The shapefiles were made available by Open Data DC. The police district shapefiles are available <a href="http://opendata.dc.gov/datasets/police-districts/">here</a> and the police service area shapefiles are available <a href="http://opendata.dc.gov/datasets/police-service-areas/">here</a>.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>The stop and frisk reports were made available by the Washington DC Metropolitan Police Department and can be accessed <a href="https://mpdc.dc.gov/node/1310236">here</a>.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>National crime statistics were published by the FBI as part of the Uniform Crime Reports and are available <a href="https://www.ucrdatatool.gov/">here</a>.<a href="#fnref4">↩</a></p></li>
+</ol>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+name: "zacks-website"
+output_dir: "."
+
+navbar:
+  title: "MATH-225: Data Visualization  & Graphics Portfolio"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Bar graphs"
+      href: bar_graphs.html
+    - text: "Line graphs"
+      href: line_graphs.html
+    - text: "Choropleths"
+      href: choropleths.html
+    - text: "Scatterplots"
+      href: scatterplots.html
+    - text: "Final project"
+      href: final_project.html
+output:
+  html_document:
+    theme: flatly
+    css: style.css

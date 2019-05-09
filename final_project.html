@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Final project</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">MATH-225: Data Visualization  & Graphics Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="bar_graphs.html">Bar graphs</a>
+</li>
+<li>
+  <a href="line_graphs.html">Line graphs</a>
+</li>
+<li>
+  <a href="choropleths.html">Choropleths</a>
+</li>
+<li>
+  <a href="scatterplots.html">Scatterplots</a>
+</li>
+<li>
+  <a href="final_project.html">Final project</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Final project</h1>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>As part of my work as a research assistant in the <a href="http://bansallab.com/">Bansal Lab</a>, I build both predictive and explanatory models of infectious disease transmission. For this final class project<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, we visualized one of these models of disease transmission through a simulated population. We used a Susceptible-Infected-Recovered (SIR) model to simulate stochastic individual tranmission and recovery with discete time steps in a network (structured as a two-dimensional lattice of 100 nodes). I generated all network<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and disease transmission data using Python.</p>
+<p>Effective disease modeling is a poweful tool, allowing for targeting of scarce resources (e.g. limited Ebola vaccine in the currect DRC outbreak<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>). It can also provide insight, explaining complex global phonemena in a systematic way<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>. Even a model as simple as this one provides valuable intuition about disease dynamics.</p>
+<pre class="r"><code>library(tidyverse)
+susceptible_data &lt;- read_csv(&quot;susceptible_time_series.csv&quot;) %&gt;%
+  rename(Time = X1)
+infected_data &lt;- read_csv(&quot;infected_time_series.csv&quot;) %&gt;%
+  rename(Time = X1)
+resistant_data &lt;- read_csv(&quot;resistant_time_series.csv&quot;) %&gt;%
+  rename(Time = X1)
+
+combined_data &lt;- read_csv(&#39;combined_data.csv&#39;)
+
+
+SIR_data &lt;- full_join(susceptible_data, infected_data, by = &quot;Time&quot;)
+SIR_data &lt;- full_join(SIR_data, resistant_data, by = &quot;Time&quot;) %&gt;% 
+  rename(&#39;Susceptible&#39; =  &#39;0.x&#39;, &quot;Infected&quot;=&#39;0.y&#39;, &#39;Resistant&#39;=&#39;0&#39;)</code></pre>
+<pre class="r"><code>for(n in network.vertex.names(network)){
+        status_list &lt;- c(status_list, if_else(as.logical(newin(n, susceptible[,index])), &#39;Susceptible&#39;, if_else(as.logical(newin(n, infected[,index])), &#39;Infected&#39;, &#39;Resistant&#39;)))
+        color_list &lt;- c(color_list, if_else(as.logical(newin(n, susceptible[,index])), &#39;blue&#39;, if_else(as.logical(newin(n, infected[,index])), &#39;red&#39;, &#39;green&#39;)))
+      }
+      
+network %v% &#39;Infection Status&#39; &lt;- status_list
+      
+pal &lt;- c(&#39;Susceptible&#39; = &#39;Reds&#39;, &#39;Infected&#39;=&#39;green,&#39;, &#39;Resistant&#39;=&#39;blue&#39;)
+      
+disease_network &lt;- ggnet2(network, 
+                                color=color_list,
+                                node.size=5)</code></pre>
+<p>In this gif, you can watch the disease spread through the population and then see it eventually fade out once enough people recover. Susceptible people are blue, infected are red, and recovered (and therefore immune) people are green. The time series plot of this outbreak is immediately below the gif.</p>
+<div class="figure">
+<img src="network_visualization.gif" />
+
+</div>
+<pre class="r"><code>ggplot(SIR_data)+
+  geom_line(aes(x = Time,
+                      y = Susceptible,
+                      color = &quot;Susceptible&quot;)) +
+        geom_line(aes(x = Time,
+                      y = Infected,
+                      color = &quot;Infected&quot;)) +
+        geom_line(aes(x = Time,
+                      y = Resistant,
+                      color = &quot;Resistant&quot;)) +
+        labs(title = &quot;Change in Number of Susceptible, Infected, and Recovered People Over Time&quot;,
+             x = &quot;Time Units\n\n&quot;,
+             y = &quot;Number of People&quot;) +
+        scale_x_continuous(limits=c(0, 90)) +
+        scale_color_manual(values=c(&quot;Susceptible&quot; = &quot;blue&quot;, &quot;Infected&quot; = &quot;red&quot;, &quot;Resistant&quot; = &quot;Green&quot;),
+                           name = &quot;Viral Status&quot;) +
+        theme_minimal()</code></pre>
+<p><img src="final_project_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>pal &lt;- heat.colors(8, alpha=1)
+ggplot(combined_data)+
+  geom_point(aes(episize, epidur, shape=as.factor(tau), color=as.factor(1/gamma)))+
+  scale_color_brewer(&#39;Mean recovery \n rate (days)&#39;, palette = &quot;Spectral&quot;)+
+  theme_minimal()+
+  labs(title=&#39;Epidemic size is related to, but but not purely dependent on epidemic duration&#39;, x=&#39;Epidemic size (people infected)&#39;, y=&#39;Epidemic duration (days)&#39;, shape=&quot;Per-contact \n infection probability&quot;)</code></pre>
+<pre><code>## Warning: Removed 68 rows containing missing values (geom_point).</code></pre>
+<p><img src="final_project_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Here we observe that, across a range of disease types, the epidemic behavior is roughly similar. This indicates that infections are propogating in similar ways. Why is this important to observe? This information allows us to think structurally about how diseases are spreading, and therefore can help us create and implement effective public health policy. This information will make it easier to answer questions like, ``Where do we most effectively distribute our limited supply of vaccines to protect the most number of people?&quot;</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This page is a revision the the class’ final project with Evie Boland and Miranda Gabriel<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Using networkx in Python<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Worden, L., Wannier, R., Hoff, N. A., Musene, K., Selo, B., Mossoko, M., … &amp; Rimoin, A. W. (2018). Real-time projections of epidemic transmission and estimation of vaccination impact during an Ebola virus disease outbreak in the Eastern region of the Democratic Republic of Congo. arXiv preprint arXiv:1811.01175., Robert, A., Camacho, A., Edmunds, W. J., Baguelin, M., Tamfum, J. J. M., Rosello, A., … &amp; Eggo, R. M. (2018). Effect of vaccinating health care workers to control Ebola virus disease: a modelling analysis of outbreak data. BioRxiv, 113506.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Colizza, V., Barrat, A., Barthélemy, M., &amp; Vespignani, A. (2006). The role of the airline transportation network in the prediction and predictability of global epidemics. Proceedings of the National Academy of Sciences, 103(7), 2015-2020.<a href="#fnref4">↩</a></p></li>
+</ol>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

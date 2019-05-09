@@ -1,0 +1,185 @@
+---
+title: "Choropleths"
+---
+
+## Introduction
+This project looked at the rate of stop and frisk reports in Washington DC across both age and gender as well as at national crime rates across the country.[^1] The plots use shapefiles of Washington DC police districts and service areas,[^2], stop and frisk reports,[^3] and national crime rate statistics.[^4] All shapefiles and raw data used are on the associated Github repo. 
+
+[^1]: These plots are based on an in-class case study developed by Dr. Nicole Meyer.
+[^2]: The shapefiles were made available by Open Data DC. The police district shapefiles are available [here](http://opendata.dc.gov/datasets/police-districts/) and the police service  area shapefiles are available [here](http://opendata.dc.gov/datasets/police-service-areas/).
+[^3]: The stop and frisk reports were made available by the Washington DC Metropolitan Police Department and can be accessed [here](https://mpdc.dc.gov/node/1310236). 
+[^4]: National crime statistics were published by the FBI as part of the Uniform Crime Reports and are available [here](https://www.ucrdatatool.gov/).
+
+```{r, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
+# Libraries
+library(tidyverse)
+library(lubridate)
+library(broom)
+library(rgdal)
+library(gpclib)
+library(maptools)
+gpclibPermit()
+library(maptools)
+library(treemap)
+
+# Data
+sf_data <- read_csv("sf.csv")
+sf_data_2017 <- read_csv("sf2017.csv")
+
+crime_data <- read_csv('CrimeStatebyState.csv')
+districts <- readOGR("Police_Districts.shp",layer="Police_Districts")
+```
+
+# Data cleaning
+  
+To clean the data I set age breaks for stop and frisk reports, associated each stop with a location (service district or district), and then summed the number of reports. 
+```{r, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
+# bind them together
+sf_data <- rbind(sf_data,sf_data_2017) %>% 
+   mutate(date = mdy(Report_taken_date_EST),
+                  Type=as.factor(`Data Type`),
+                  Gender=as.factor(Subject_Sex),
+                  Ethnicity=as.factor(Subject_Ethnicity),
+                  Race=as.factor(Subject_Race),
+                  District=as.factor(`Incident Location District`),
+                  PSA=as.factor(`Incident Location PSA`),
+                  Year=as.factor(Year)) %>%
+  mutate(num_age = ifelse(Age=="Juvenile"|Age=="Unknown",NA,as.numeric(Age))) %>%
+  mutate(cat_age = cut(num_age, 
+                       breaks=c(17,27,37,47,57,67,77,87),
+                       labels=c("18-27","28-37","38-47",
+                                                  "48-57","58-67","68-77",
+                                                  "78-87"))) %>%
+  mutate(cat_age = ifelse(Age=="Juvenile"|Age=="Unknown", Age,
+                                            as.character(cat_age))) %>% 
+  mutate(Age_binned=as.factor(cat_age)) %>% 
+  mutate(Age=fct_relevel(Age,"Juvenile"),
+                  Age_binned=fct_relevel(Age_binned,"Juvenile")) %>%
+  mutate(Month=month(date,label=T,abbr=F))
+
+remove(sf_data_2017)
+
+# defining districts as "id" variable
+names(districts@data)[1] <- "id"
+
+# extracting the lat/long coordinates of district boundary points
+# telling the tidy function that the region value can be found in the "id" variable
+districts.points <- tidy(districts, region="id")
+
+# combine lat/long coordinates of district boundary points with data about districts
+districts.cart <- full_join(districts.points, districts@data, by="id")
+
+# import geospatial data about Police Service Areas
+psas <- readOGR("Police_Service_Areas.shp",layer="Police_Service_Areas")
+
+# extracting the lat/long coordinates of PSA boundary points
+# telling the tidy function that the region value can be found in the "PSA" variable
+psas.points <- tidy(psas, region="PSA")
+
+# combine lat/long coordinates of district boundary points with data about districts
+# tell join function that "id" in psas.points corresponds to "PSA" in psas@data
+psas.cart <- full_join(psas.points, psas@data, by=c("id" = "PSA"))
+```
+
+## Visualizations
+
+```{r plot 1,message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
+# A panel of maps showing the number of stop and frisk reports in each police service area faceted by gender
+plot_data <- filter(sf_data,!is.na(District), Subject_Sex == 'Male'| Subject_Sex == 'Female')
+levels(plot_data$Subject_Sex) <- c('Male', 'Female')
+
+all_cats <- expand(plot_data,PSA,Year)
+
+plot_data <- summarize(group_by(plot_data, PSA,Year,Subject_Sex),reports=n())
+
+plot_data <- full_join(plot_data,all_cats,by=c("PSA","Year"))
+
+plot_data <- mutate(plot_data,reports=replace_na(reports,0))
+
+names(plot_data)[1] <- "NAME"
+
+mapdata <- full_join(plot_data,psas.cart,by="NAME")
+levels(mapdata$Subject_Sex) <- c('Male', 'Female')
+
+ggplot() +
+  geom_polygon(data=drop_na(mapdata), aes(x=long, y=lat, group=group,fill=reports),color="black") +
+  coord_map()+
+  labs(title = 'Panel of Stop and Frisk reports per service area faceted by gender')+
+  scale_fill_distiller(palette="Spectral", name="Number of Reports")+
+  facet_wrap(~Subject_Sex)+
+  theme(axis.line=element_blank(),axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),legend.position="none",
+          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),plot.background=element_blank())
+
+```
+
+```{r plot 2, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
+# A panel of maps showing the number of stop and frisk reports in each police district faceted by age group
+plot_data <- filter(sf_data,!is.na(District), !Age_binned == "Unknown")
+plot_data$Age_binned <- factor(plot_data$Age_binned)
+
+levels(plot_data$District) <- c("First District","Second District",
+                                "Third District","Fourth District",
+                                "Fifth District","Sixth District",
+                                "Seventh District")
+
+all_cats <- expand(plot_data,District,Year)
+
+plot_data <-summarize(group_by(plot_data, District,Year, Age_binned, .drop=FALSE), reports=n())
+
+
+plot_data <- full_join(plot_data,all_cats,by=c("District","Year"))
+
+names(plot_data)[1] <- "NAME"
+
+mapdata <- full_join(plot_data,districts.cart,by="NAME")
+
+ggplot() +
+  geom_polygon(data=mapdata,
+               aes(x=long, y=lat, group=group,fill=reports),color="black") +
+  coord_map()+
+  theme_void()+
+  labs(title = 'Panel of Stop and Frisk reports per police district faceted by age group')+
+  scale_fill_distiller(palette="Spectral", name="Number of Reports",na.value="grey")+
+  facet_wrap(vars(Age_binned))+
+  theme(axis.line=element_blank(),axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),legend.position="none",
+          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),plot.background=element_blank())
+```
+
+```{r plot 3, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
+crime_2013 <- filter(crime_data,Year==2013, State!="United States-Total") %>% 
+  rename(region=State) %>% 
+  mutate(region=tolower(region))
+
+all_states <- map_data("state")
+
+stateData <- left_join(all_states,crime_2013,by="region")
+
+ggplot()+
+  geom_polygon(data=stateData,
+               aes(x=long, y=lat, group = group, fill=`Robbery rate`),
+               color="grey50")+
+  scale_fill_distiller(palette="Oranges",  limits = c(0, 200),direction=1, na.value = 'white')+
+  labs(title = 'Choropleth of the Robbery Rate by State in 2013')+
+  coord_map()+
+  theme(axis.line=element_blank(),axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),legend.position="none",
+          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),plot.background=element_blank())
+```
+
+## Results
+The maps show that the stop and frisk rate in DC varies strongly with geographic location, age, and gender. Stops occur most often in eastern DC and to young males. Females are much less likely to be stopped than males in all parts of DC. Similarly, the rate of stops drops off dramatically for people above the age of 40.   
+
+The third visualization, of robberies across the US by state, shows that robberies are geographically heterogenous. Nevada has by far the most robberies per person. Aside from this outlier, states with a large urban population are much more likely to have a high robbery rate per person (e.g. Illinois).
+
+

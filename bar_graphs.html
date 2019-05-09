@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Bar graphs</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">MATH-225: Data Visualization  & Graphics Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="bar_graphs.html">Bar graphs</a>
+</li>
+<li>
+  <a href="line_graphs.html">Line graphs</a>
+</li>
+<li>
+  <a href="choropleths.html">Choropleths</a>
+</li>
+<li>
+  <a href="scatterplots.html">Scatterplots</a>
+</li>
+<li>
+  <a href="final_project.html">Final project</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Bar graphs</h1>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In this analysis, we<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> were interested in exploring how income changes with heroin use. We used the National Survey on Drug Use and Health <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> as a source for data on self-reported heroin use and self-reported income bracket<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>. Because these data are self-reported, any inference should be treated with caution.</p>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The data are from the National Survey on Drug Use and Health , which is conducted annually by the Substance Abuse and Mental Health Services Administration (SAMHSA), an agency in the U.S. Department of Health and Human Services (DHHS). More information about this survey can be found at <a href="http://www.icpsr.umich.edu/icpsrweb/ICPSR/series/64">ICPSR’s data archive page</a>.</p>
+<pre class="r"><code># Libraries
+library(tidyverse)
+library(forcats)
+library(gridExtra)
+library(ggpubr)
+
+# Data
+load(&quot;36361-0001-Data.rda&quot;) # available in the github repo
+data &lt;- da36361.0001
+remove(da36361.0001)</code></pre>
+</div>
+<div id="data-manipulation" class="section level2">
+<h2>Data Manipulation</h2>
+<p>We excluded anyone that did not respond to the income or heroin-use questions.</p>
+<pre class="r"><code>#Defining user status
+heroin_user &lt;- filter(data, HEREVER == &quot;(1) Yes&quot;)
+non_user &lt;- filter(data, HEREVER == &quot;(2) No&quot;)
+
+#Combining data
+heroin_user$user_status &lt;- &quot;Heroin User&quot;
+non_user$user_status &lt;- &quot;Non User&quot;
+combined_data &lt;- rbind(heroin_user,non_user)
+
+# Take percentages in each income bracket across heroin status
+summary_data_non_user &lt;- summarize(group_by(non_user, IRPINC3, user_status),
+                                count=n())
+summary_data_non_user$percent &lt;- summary_data_non_user$count/sum(summary_data_non_user$count)
+
+summary_data_heroin_user &lt;- summarize(group_by(heroin_user, IRPINC3, user_status),
+                                  count=n())
+summary_data_heroin_user$percent &lt;- summary_data_heroin_user$count/sum(summary_data_heroin_user$count)
+
+summary_data &lt;- rbind(summary_data_non_user, summary_data_heroin_user)</code></pre>
+<p>We first classified our participants by their response to the question “Have you ever used heroin?” A participant who responded <code>(1) Yes</code> is categorized as a <code>heroin_user</code> and a participant who responded <code>(2) No</code> is categorized as a <code>non_user</code>. We then found the percentage of total heroin users and non-users in each income bracket.</p>
+</div>
+<div id="visual-display" class="section level2">
+<h2>Visual Display</h2>
+<pre class="r"><code>#Side-by-Side Bar Plot
+ggplot(summary_data)+
+    labs(title = &quot;Income bracket distribution by user status&quot;,
+       x=&quot;Income bracket&quot;, 
+       y= &quot;Proportion of user \n status in income bracket&quot;)+
+  geom_bar(aes(x=IRPINC3,
+               fill=user_status,
+               y=percent),
+           position=&quot;dodge&quot;,
+           stat=&quot;identity&quot;)+ 
+  scale_fill_manual(values=rep(c(&quot;red&quot;,&quot;blue&quot;)),
+                    name=&quot;User Status&quot;)+
+  scale_x_discrete(labels=c(&quot;Less than $10,000&quot;, &quot;$10,000-$19,999&quot;,&quot;$20,000-$29,999&quot;,&quot;$30,000-$39,999&quot;, &quot;$40,000-$49,999&quot;, &quot;$50,000-$74,999&quot;,&quot;$75,000 or More&quot;))+ 
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 9),
+        axis.text.y=element_text(size = 9))</code></pre>
+<p><img src="bar_graphs_files/figure-html/side_by_side-1.png" width="672" /></p>
+<pre class="r"><code>#Stacked bar plot
+ggplot(combined_data)+
+  geom_bar(aes(x=user_status,fill=IRPINC3),position=&quot;fill&quot;)+
+  scale_fill_brewer(palette=&quot;RdYlBu&quot;,direction=1,
+                    name=&quot;Income Bracket&quot;)+
+  labs(x=&quot;&quot;,y=&quot;Proportion per income bracket \n by user status&quot;,
+       title=&quot;Proportion of  Family income bracket by User Status&quot;)+
+  scale_x_discrete(labels=c(&quot;Non User&quot;,&quot;Heroin User&quot;))+
+  theme_minimal()</code></pre>
+<p><img src="bar_graphs_files/figure-html/stacked_bar_plot-1.png" width="672" /></p>
+<pre class="r"><code>#Bar Chart
+bar_chart_heroin_user &lt;- 
+  ggplot(heroin_user)+
+  geom_bar(aes(x=IRPINC3,fill=IRPINC3))+
+  coord_flip()+
+  labs(x=&#39;Heroin users&#39;, y=&#39;Number of respondents&#39;)+
+  scale_fill_brewer(palette=&quot;RdYlBu&quot;,direction=1,
+                    name=&quot;Income Level&quot;)+
+  theme_minimal()
+
+bar_chart_non_user &lt;- 
+  ggplot(non_user)+
+  geom_bar(aes(x=IRPINC3, fill=IRPINC3))+
+  coord_flip()+
+  labs(x=&#39;Non-users&#39;, y=&#39;Number of respondents&#39;)+
+  scale_fill_brewer(palette=&quot;RdYlBu&quot;,direction=1,
+                    name=&quot;Income Level&quot;)+
+  theme_minimal()
+
+ggarrange(bar_chart_heroin_user, bar_chart_non_user, nrow=2, common.legend = T) </code></pre>
+<p><img src="bar_graphs_files/figure-html/bar-1.png" width="672" /></p>
+<p>Note: There is a dramatic difference in scale on the x-axis because there are fewer heroin users and than non-users. We diplay absolute number to display relative relationship.</p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>The proportion of respondents who reported that they used heroin (in the past or present) continuously decreased as income increased. In contrast, most people who had never used heroin were not in the middle group of income brackets -they were more likely to be in the higher- or lower-income brackets.</p>
+<p>From our graphs, we can see that survey respondents who reported that they have never used heroin were more likely to reside in at the two extremes of our income distribution - our lowest and two highest income brackets - than were survey respondents who reported that they have used heroin. Stated differently, respondents who reported that they have used heroin were more likely to reside in our middle four income brackets than their counterparts who had never used heroin.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This page is a revision of a lab originally completed with Evie Boland, Joshua Gatcke, and Miguel Ojeda.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>A brief summary of the survey and its methodology is available <a href="https://nsduhweb.rti.org/respweb/homepage.cfm">here</a> and the survey’s raw data for each of the last <span class="math inline">\(40\)</span> years are available <a href="https://www.icpsr.umich.edu/icpsrweb/ICPSR/series/64">here</a>.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>We use the variable <code>HEREVER</code> to determine self-reported heroin use and the variable <code>IRPINC3</code> determine income bracket. <code>HEREVER</code> is either “Yes”“,”No“, or”NA“”, and <code>IRPINC3</code> is split into seven brackets: less than $10,000, every $10,000 up to $50,000, from $50,000 to $75,000, and more than $75,000. A detailed description of all variables is available <a href="https://www.icpsr.umich.edu/icpsrweb/NAHDAP/studies/36361/variables">here</a><a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

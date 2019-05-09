@@ -1,0 +1,117 @@
+---
+title: "Bar graphs"
+---
+
+## Introduction
+
+In this analysis, we[^1] were interested in exploring how income changes with heroin use. We used the National Survey on Drug Use and Health [^2] as a source for data on self-reported heroin use and self-reported income bracket[^3]. Because these data are self-reported, any inference should be treated with caution.
+
+[^1]: This page is a revision of a lab originally completed with Evie Boland, Joshua Gatcke, and Miguel Ojeda.
+
+[^2]: A brief summary of the survey and its methodology is available [here](https://nsduhweb.rti.org/respweb/homepage.cfm) and the survey's raw data for each of the last $40$ years are available [here](https://www.icpsr.umich.edu/icpsrweb/ICPSR/series/64). 
+
+[^3]: We use the variable `HEREVER` to determine self-reported heroin use and the variable `IRPINC3` determine income bracket. `HEREVER` is either "Yes"", "No", or "NA"", and `IRPINC3` is split into seven brackets: less than \$10,000, every \$10,000 up to \$50,000, from \$50,000 to \$75,000, and more than \$75,000. A detailed description of all variables is available [here](https://www.icpsr.umich.edu/icpsrweb/NAHDAP/studies/36361/variables)
+
+## Data
+The data are from the National Survey on Drug Use and Health , which is conducted annually by the Substance Abuse and Mental Health Services Administration (SAMHSA), an agency in the U.S. Department of Health and Human Services (DHHS).  More information about this survey can be found at [ICPSR's data archive page](http://www.icpsr.umich.edu/icpsrweb/ICPSR/series/64).
+
+```{r data_and_packages_load, message=F}
+# Libraries
+library(tidyverse)
+library(forcats)
+library(gridExtra)
+library(ggpubr)
+
+# Data
+load("36361-0001-Data.rda") # available in the github repo
+data <- da36361.0001
+remove(da36361.0001)
+```
+
+## Data Manipulation
+We excluded anyone that did not respond to the income or heroin-use questions.
+```{r}
+#Defining user status
+heroin_user <- filter(data, HEREVER == "(1) Yes")
+non_user <- filter(data, HEREVER == "(2) No")
+
+#Combining data
+heroin_user$user_status <- "Heroin User"
+non_user$user_status <- "Non User"
+combined_data <- rbind(heroin_user,non_user)
+
+# Take percentages in each income bracket across heroin status
+summary_data_non_user <- summarize(group_by(non_user, IRPINC3, user_status),
+                                count=n())
+summary_data_non_user$percent <- summary_data_non_user$count/sum(summary_data_non_user$count)
+
+summary_data_heroin_user <- summarize(group_by(heroin_user, IRPINC3, user_status),
+                                  count=n())
+summary_data_heroin_user$percent <- summary_data_heroin_user$count/sum(summary_data_heroin_user$count)
+
+summary_data <- rbind(summary_data_non_user, summary_data_heroin_user)
+```
+We first classified our participants by their response to the question "Have you ever used heroin?"  A participant who responded `(1) Yes` is categorized as a `heroin_user` and a participant who responded `(2) No` is categorized as a `non_user`. We then found the percentage of total heroin users and non-users in each income bracket.
+
+## Visual Display
+```{r side_by_side}
+#Side-by-Side Bar Plot
+ggplot(summary_data)+
+    labs(title = "Income bracket distribution by user status",
+       x="Income bracket", 
+       y= "Proportion of user \n status in income bracket")+
+  geom_bar(aes(x=IRPINC3,
+               fill=user_status,
+               y=percent),
+           position="dodge",
+           stat="identity")+ 
+  scale_fill_manual(values=rep(c("red","blue")),
+                    name="User Status")+
+  scale_x_discrete(labels=c("Less than $10,000", "$10,000-$19,999","$20,000-$29,999","$30,000-$39,999", "$40,000-$49,999", "$50,000-$74,999","$75,000 or More"))+ 
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 9),
+        axis.text.y=element_text(size = 9))
+```
+
+```{r stacked_bar_plot}
+#Stacked bar plot
+ggplot(combined_data)+
+  geom_bar(aes(x=user_status,fill=IRPINC3),position="fill")+
+  scale_fill_brewer(palette="RdYlBu",direction=1,
+                    name="Income Bracket")+
+  labs(x="",y="Proportion per income bracket \n by user status",
+       title="Proportion of  Family income bracket by User Status")+
+  scale_x_discrete(labels=c("Non User","Heroin User"))+
+  theme_minimal()
+```
+
+```{r bar, echo = TRUE}
+#Bar Chart
+bar_chart_heroin_user <- 
+  ggplot(heroin_user)+
+  geom_bar(aes(x=IRPINC3,fill=IRPINC3))+
+  coord_flip()+
+  labs(x='Heroin users', y='Number of respondents')+
+  scale_fill_brewer(palette="RdYlBu",direction=1,
+                    name="Income Level")+
+  theme_minimal()
+
+bar_chart_non_user <- 
+  ggplot(non_user)+
+  geom_bar(aes(x=IRPINC3, fill=IRPINC3))+
+  coord_flip()+
+  labs(x='Non-users', y='Number of respondents')+
+  scale_fill_brewer(palette="RdYlBu",direction=1,
+                    name="Income Level")+
+  theme_minimal()
+
+ggarrange(bar_chart_heroin_user, bar_chart_non_user, nrow=2, common.legend = T) 
+```
+
+Note: There is a dramatic difference in scale on the x-axis because there are fewer heroin users and than non-users. We diplay absolute number to display relative relationship.
+
+## Results
+The proportion of respondents who reported that they used heroin (in the past or present) continuously decreased as income increased.  In contrast, most people who had never used heroin were not in the middle group of income brackets -they were more likely to be in the higher- or lower-income brackets.
+
+From our graphs, we can see that survey respondents who reported that they have never used heroin were more likely to reside in at the two extremes of our income distribution - our lowest and two highest income brackets - than were survey respondents who reported that they have used heroin.  Stated differently, respondents who reported that they have used heroin were more likely to reside in our middle four income brackets than their counterparts who had never used heroin.  

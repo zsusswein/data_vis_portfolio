@@ -1,0 +1,52 @@
+---
+title: "Scatterplots"
+---
+
+## Introduction
+This project involved exploring the diamonds dataset from the ggplot2 package.[^1] The dataset describes the size, price, and associated qualities of almost 54,000 diamonds. The goal of this analysis was to understand the intersection between diamond characteristics (e.g. carat, size) and price, using a combination of simple scatterplots, multidimensional scatterplots (i.e. using color/size/transparency), and simple linear regression.[^2] 
+
+[^1]: H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
+[^2]: This project is based on an in class assignment developed by Dr. Nicole Meyer.
+
+## Data processing
+
+For purposes of visualization, I pulled out a random subset of $500$ diamonds from the full dataset.
+```{r libraries, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
+library(tidyverse)
+
+set.seed(1234) # set seed --- results are "random"
+diamonds.small <-  diamonds[sample(nrow(diamonds), 500), ]
+```
+
+## Visualizations
+```{r plot 1}
+# A standard scatterplot of carat vs. price
+g <- ggplot(diamonds.small, aes(carat, price))+
+  theme_minimal()+
+  labs(y='Price (dollars)', x='Carat')
+g+geom_point(alpha=0.5)+
+  labs(title='Price of diamonds is positively correlated with carat quality')
+```
+
+```{r plot 2}
+# A scatter plot of carat vs. price in which the size of the points is proportional to the relative frequency and the color is determined by the quality of the cut
+g+
+  geom_count(aes(size=stat(prop), color = cut), alpha=0.5)+
+  labs(title='Diamond cut, carat, and abundance impact price', size='Proportion of \n diamonds sold', color='Cut')
+```
+
+```{r plot 3}
+# Repeat graph (7), but use polynomial regression instead of simple linear. Choose the polynomial degree you think (based on a visual inspection) gives the best fit with the smallest possible degree.
+
+g+
+  geom_count(aes(size=stat(prop), color = cut), alpha=0.5)+
+  geom_smooth(method='lm', aes(group=cut, color=cut), level=.68)+
+  labs(title='Diamond cut impacts change in price differently across carat quality', size='Proportion of \n diamonds sold', color='Cut')
+```
+  
+Note: The confidence bands are $\pm$ one standard error.
+
+## Results
+
+The three graphs show a positive, strong, nonlinear association between carat and price. No single type of diamond is overrepresented in our subsample. While this simple linear regression has a polynomial term to match the curvature of the data, the data doesn't meet the requirements for meaningful regression; there is heterogeneity of variance and insufficient data for extrapolation for all the categories. However, these regressions can be used to observe the similarity in overall trend across `cut` quality
+
