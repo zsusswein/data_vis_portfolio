@@ -1,0 +1,117 @@
+---
+title: "Line graphs"
+---
+
+## Introduction
+
+In this analysis, I looked at the role of various statistics on player salaries in Major League Baseball over time.[^1] The raw data was taken from [Lahman’s Baseball Database](http://www.seanlahman.com/baseball-archive/statistics/) and the [Bureau of Labor Statistics’ Consumer Price Index Inflation Calculator](https://www.bls.gov/data/inflation_calculator.htm), with the  comma separated variable files available in the Gitub repo. There are four files: player vital statistics (e.g. height), pitching records (containing earned run average (ERA) with one row per player per team), player salary, and dollar purchasing power per year in terms of 2015 dollars. The two main objectives of this homework were to effectively visualize data (shocking!) and to practice joining and cleaning messy and inconsistently labeled datasets.
+
+[^1]: These plots are revised versions of an individual homework assignment by Dr. Nicole Meyer.
+
+## Data cleaning
+```{r library and data, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
+# Libraries
+library(tidyverse)
+
+# Data
+player_data <- read.csv("Master.csv")
+pitching_data <- read.csv("Pitching.csv")
+salary_data <- read.csv("Salaries.csv")
+inflation_index <- read.csv("inflation.csv")
+```
+
+```{r data processing}
+## Process line plot data
+pitching_data$yearID <- as.numeric(as.character(pitching_data$yearID)) # make sure year is a continuous numeric
+
+# remove all NAs and set up ERA quantiles
+summary_ERA <- summarize(group_by(pitching_data, yearID), 
+                        Q1 = quantile(ERA,.25,na.rm=T),
+                        median=median(ERA,na.rm=T), 
+                        Q3 = quantile(ERA,.75,na.rm=T), 
+                        min=min(ERA,na.rm=T), 
+                        max=max(ERA,na.rm=T))
+
+# filter pitcher data
+pitchers_with_10_games <- filter(pitching_data, G >= 10) # cut out all pitchers with fewer than 10 games
+pitching_prop <- summarize(group_by(pitchers_with_10_games, yearID), 
+                          prop_ERA_under_3 = mean(ERA <= 3),
+                          prop_ERA_over_6 = mean(ERA >= 6))
+
+# process and join datasets
+birth_data = transmute(player_data, usa_born = birthCountry == 'USA') %>%
+  mutate(playerID = as.character(player_data$playerID)) %>%
+  filter(!is.na(usa_born))
+salary_data$playerID = as.character(salary_data$playerID)
+salary_data = inner_join(birth_data, salary_data, by='playerID') %>%
+  filter(!is.na(usa_born))
+
+# summarize salary quantiles
+summary_salary <- summarize(group_by(salary_data, yearID, usa_born), 
+                            Q1 = quantile(salary,.25,na.rm=T),
+                            median=median(salary,na.rm=T), 
+                            Q3 = quantile(salary,.75,na.rm=T), 
+                            min=min(salary,na.rm=T), 
+                            max=max(salary,na.rm=T))
+
+# join inflation and salary datasets
+names(inflation_index)[1] <- "yearID" # change the year key to be the same between datasets
+summary_salary_left <- left_join(summary_salary, inflation_index, by="yearID") # join
+summary_salary_left[summary_salary_left$yearID==2015,"inflation2015"]<-1 # change inflation in 2015 because inflation is relative to 2015
+
+# adjust for inflation
+summary_salary <- mutate(summary_salary_left, median_inflation_adjusted = median*inflation2015, Q1_inflation_adjusted = Q1*inflation2015, Q3_inflation_adjusted = Q3*inflation2015, min_inflation_adjusted = min*inflation2015,max_inflation_adjusted = max*inflation2015)
+
+#split into USA and non-USA
+summary_salary_USA <- summary_salary %>%
+  filter(usa_born)
+summary_salary_nonUSA <- summary_salary %>%
+  filter(!usa_born)
+```
+
+
+To clean the data, I removed all `NA` values, split the ERA and income data into quantiles, matched all players to a unique ID, and adjusted salaries for inflation.
+
+## Visualizations
+```{r ERA over time}
+ggplot(summary_ERA)+
+  geom_ribbon(aes(x=yearID, ymin=Q1, ymax=Q3), fill='lightgreen')+
+  geom_line(aes(x=yearID, y=median), color='darkblue')+
+  labs(x='Year', y='Median ERA', title='Median pitcher ERA over time')+
+  theme_minimal()
+```
+  
+Note: the green fill indicates the first through third quartile (middle $50$%).
+
+```{r ERA proportion}
+ggplot(pitching_prop, aes(x=yearID))+
+  geom_line(aes(y=prop_ERA_under_3, color='3 or under'))+
+  geom_line(aes(y=prop_ERA_over_6, color='6 or higher'))+
+  scale_color_manual(values=c("3 or under"="darkblue","6 or higher"="red"), name = 'ERA')+
+  scale_x_continuous(name='Year')+
+  scale_y_continuous(name='Proportion')+
+  ggtitle('Proportion of Pitchers (pitching at least 10 games)\n With Low and High ERAs by Year')+
+  theme_minimal()
+```
+  
+Low and high ERAs were decided (somewhat arbitrarily) to be below 3 and above 6 respectively.
+
+```{r Salary by country}
+ggplot(summary_salary_USA, aes(x=yearID))+
+  geom_ribbon(aes(ymin=Q1_inflation_adjusted, ymax=Q3_inflation_adjusted, fill = 'Born in USA'), alpha = 0.4)+
+  geom_ribbon(data = summary_salary_nonUSA, (aes(ymin=Q1_inflation_adjusted, ymax=Q3_inflation_adjusted, fill = 'Born outside USA')), alpha = 0.4)+
+  geom_line(data=summary_salary_USA, aes(y=median_inflation_adjusted, color = 'Born in USA'), size=1)+
+  geom_line(data=summary_salary_nonUSA, aes(y=median_inflation_adjusted, color='Born outside USA'), size = 1)+
+  scale_color_manual(name = 'Median Salary', values = c('Born in USA' = '#F8766D', 'Born outside USA' = '#00BFC4'))+
+  scale_fill_manual(name='Middle 50% of Earners', values = c('Born in USA' = '#F8766D', 'Born outside USA' = '#00BFC4'))+
+  scale_y_continuous(labels=scales::dollar)+
+  labs(y="Annual Salary  \n (in 2015 dollars)",x="Year",title="Salaries of Middle 50% of Earners in Major League Baseball \n by citizenship status")+
+  theme_minimal()
+```
+
+## Results
+
+Pitcher ERA has been a relatively noisy metric, but has maintained a roughly similar median over time. However, the proportion of extremely low or high ERAs has decreased, leading to a less skewed distribution. While the proportion of extreme ERAs has decreased, distribution of salaries has become much more variable. The median salary has increased by roughly $\$1,000,000$ for all players, both those born in the US and those born elsewhere. Notably, deviation in salaries has markedly increased, with the $75$th percentile of earners making as much as six time the median, three times the difference a century ago.
+
+
+
