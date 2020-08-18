@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -84,7 +84,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -233,6 +232,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -244,18 +244,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -321,7 +309,7 @@ $(document).ready(function () {
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>In this analysis, I looked at the role of various statistics on player salaries in Major League Baseball over time.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> The raw data was taken from <a href="http://www.seanlahman.com/baseball-archive/statistics/">Lahman’s Baseball Database</a> and the <a href="https://www.bls.gov/data/inflation_calculator.htm">Bureau of Labor Statistics’ Consumer Price Index Inflation Calculator</a>, with the comma separated variable files available in the Gitub repo. There are four files: player vital statistics (e.g. height), pitching records (containing earned run average (ERA) with one row per player per team), player salary, and dollar purchasing power per year in terms of 2015 dollars. The two main objectives of this homework were to effectively visualize data (shocking!) and to practice joining and cleaning messy and inconsistently labeled datasets.</p>
+<p>In this analysis, I looked at the role of various statistics on player salaries in Major League Baseball over time.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> The raw data was taken from <a href="http://www.seanlahman.com/baseball-archive/statistics/">Lahman’s Baseball Database</a> and the <a href="https://www.bls.gov/data/inflation_calculator.htm">Bureau of Labor Statistics’ Consumer Price Index Inflation Calculator</a>, with the comma separated variable files available in the Gitub repo. There are four files: player vital statistics (e.g. height), pitching records (containing earned run average (ERA) with one row per player per team), player salary, and dollar purchasing power per year in terms of 2015 dollars. The two main objectives of this homework were to effectively visualize data (shocking!) and to practice joining and cleaning messy and inconsistently labeled datasets.</p>
 </div>
 <div id="data-cleaning" class="section level2">
 <h2>Data cleaning</h2>
@@ -329,10 +317,10 @@ $(document).ready(function () {
 library(tidyverse)
 
 # Data
-player_data &lt;- read.csv(&quot;Master.csv&quot;)
-pitching_data &lt;- read.csv(&quot;Pitching.csv&quot;)
-salary_data &lt;- read.csv(&quot;Salaries.csv&quot;)
-inflation_index &lt;- read.csv(&quot;inflation.csv&quot;)</code></pre>
+player_data &lt;- read.csv(&quot;data/Master.csv&quot;)
+pitching_data &lt;- read.csv(&quot;data/Pitching.csv&quot;)
+salary_data &lt;- read.csv(&quot;data/Salaries.csv&quot;)
+inflation_index &lt;- read.csv(&quot;data/inflation.csv&quot;)</code></pre>
 <pre class="r"><code>## Process line plot data
 pitching_data$yearID &lt;- as.numeric(as.character(pitching_data$yearID)) # make sure year is a continuous numeric
 
@@ -342,15 +330,15 @@ summary_ERA &lt;- summarize(group_by(pitching_data, yearID),
                         median=median(ERA,na.rm=T), 
                         Q3 = quantile(ERA,.75,na.rm=T), 
                         min=min(ERA,na.rm=T), 
-                        max=max(ERA,na.rm=T))
-
-# filter pitcher data
+                        max=max(ERA,na.rm=T))</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code># filter pitcher data
 pitchers_with_10_games &lt;- filter(pitching_data, G &gt;= 10) # cut out all pitchers with fewer than 10 games
 pitching_prop &lt;- summarize(group_by(pitchers_with_10_games, yearID), 
                           prop_ERA_under_3 = mean(ERA &lt;= 3),
-                          prop_ERA_over_6 = mean(ERA &gt;= 6))
-
-# process and join datasets
+                          prop_ERA_over_6 = mean(ERA &gt;= 6))</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code># process and join datasets
 birth_data = transmute(player_data, usa_born = birthCountry == &#39;USA&#39;) %&gt;%
   mutate(playerID = as.character(player_data$playerID)) %&gt;%
   filter(!is.na(usa_born))
@@ -364,9 +352,9 @@ summary_salary &lt;- summarize(group_by(salary_data, yearID, usa_born),
                             median=median(salary,na.rm=T), 
                             Q3 = quantile(salary,.75,na.rm=T), 
                             min=min(salary,na.rm=T), 
-                            max=max(salary,na.rm=T))
-
-# join inflation and salary datasets
+                            max=max(salary,na.rm=T))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;yearID&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code># join inflation and salary datasets
 names(inflation_index)[1] &lt;- &quot;yearID&quot; # change the year key to be the same between datasets
 summary_salary_left &lt;- left_join(summary_salary, inflation_index, by=&quot;yearID&quot;) # join
 summary_salary_left[summary_salary_left$yearID==2015,&quot;inflation2015&quot;]&lt;-1 # change inflation in 2015 because inflation is relative to 2015
@@ -419,7 +407,7 @@ summary_salary_nonUSA &lt;- summary_salary %&gt;%
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>These plots are revised versions of an individual homework assignment by Dr. Nicole Meyer.<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>These plots are revised versions of an individual homework assignment by Dr. Nicole Meyer.<a href="#fnref1" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
 
@@ -440,6 +428,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
