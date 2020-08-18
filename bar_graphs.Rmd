@@ -23,7 +23,7 @@ library(gridExtra)
 library(ggpubr)
 
 # Data
-load("36361-0001-Data.rda") # available in the github repo
+load("data/36361-0001-Data.rda") # available in the github repo
 data <- da36361.0001
 remove(da36361.0001)
 ```
@@ -35,13 +35,14 @@ We excluded anyone that did not respond to the income or heroin-use questions.
 ```{r}
 #Defining user status
 
-summary_by_income <- data %>% 
+combined_data <- data %>% 
   filter(!is.na(HEREVER)) %>%   # remove NAs
   mutate(user = if_else(HEREVER == "(1) Yes", 1, 0),
          non_user = if_else(HEREVER == "(2) No", 'Non-user', 'Heroin user')) %>% # create a new boolean value for use
   group_by(IRPINC3, user, non_user) %>%   # first take the sum in each cell
   select(user, non_user, IRPINC3) %>% 
-  summarize(count = n()) %>% 
+  summarize(count = n())
+summary_by_income <- combined_data %>% 
   ungroup() %>% 
   group_by(user, non_user) %>%      # then regroup to take the mean across income
   mutate(p = count / sum(count))
@@ -71,8 +72,8 @@ ggplot(summary_by_income)+
 
 ```{r stacked_bar_plot}
 #Stacked bar plot
-ggplot(combined_data)+
-  geom_bar(aes(x=user_status,fill=IRPINC3),position="fill")+
+ggplot(summary_by_income, aes(x=as.factor(non_user),fill = IRPINC3, y = p))+
+  geom_bar(position="fill", stat="identity")+
   scale_fill_brewer(palette="RdYlBu",direction=1,
                     name="Income Bracket")+
   labs(x="",y="Proportion per income bracket \n by user status",
@@ -83,20 +84,18 @@ ggplot(combined_data)+
 
 ```{r bar, echo = TRUE}
 #Bar Chart
-bar_chart_heroin_user <- 
-  ggplot(heroin_user)+
-  geom_bar(aes(x=IRPINC3,fill=IRPINC3))+
+bar_chart_heroin_user <- ggplot(combined_data %>% filter(non_user == 'Heroin user'))+
+  geom_bar(aes(x=IRPINC3,fill=IRPINC3, y = count), stat = 'identity')+
   coord_flip()+
   labs(x='Heroin users', y='Number of respondents')+
   scale_fill_brewer(palette="RdYlBu",direction=1,
                     name="Income Level")+
   theme_minimal()
 
-bar_chart_non_user <- 
-  ggplot(non_user)+
-  geom_bar(aes(x=IRPINC3, fill=IRPINC3))+
+bar_chart_non_user <- ggplot(combined_data %>% filter(non_user == 'Non-user'))+
+  geom_bar(aes(x=IRPINC3,fill=IRPINC3, y = count), stat = 'identity')+
   coord_flip()+
-  labs(x='Non-users', y='Number of respondents')+
+  labs(x='Heroin users', y='Number of respondents')+
   scale_fill_brewer(palette="RdYlBu",direction=1,
                     name="Income Level")+
   theme_minimal()
