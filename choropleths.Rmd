@@ -23,11 +23,11 @@ library(maptools)
 library(treemap)
 
 # Data
-sf_data <- read_csv("sf.csv")
-sf_data_2017 <- read_csv("sf2017.csv")
+sf_data <- read_csv("data/sf.csv")
+sf_data_2017 <- read_csv("data/sf2017.csv")
 
-crime_data <- read_csv('CrimeStatebyState.csv')
-districts <- readOGR("Police_Districts.shp",layer="Police_Districts")
+crime_data <- read_csv('data/CrimeStatebyState.csv')
+districts <- readOGR("data/Police_Districts.shp",layer="Police_Districts")
 ```
 
 # Data cleaning
@@ -44,7 +44,7 @@ sf_data <- rbind(sf_data,sf_data_2017) %>%
                   District=as.factor(`Incident Location District`),
                   PSA=as.factor(`Incident Location PSA`),
                   Year=as.factor(Year)) %>%
-  mutate(num_age = ifelse(Age=="Juvenile"|Age=="Unknown",NA,as.numeric(Age))) %>%
+  mutate(num_age = ifelse(Age=="Juvenile" | Age=="Unknown", NA, as.numeric(Age))) %>%
   mutate(cat_age = cut(num_age, 
                        breaks=c(17,27,37,47,57,67,77,87),
                        labels=c("18-27","28-37","38-47",
@@ -73,11 +73,9 @@ districts.cart <- full_join(districts.points, districts@data, by="id")
 psas <- readOGR("Police_Service_Areas.shp",layer="Police_Service_Areas")
 
 # extracting the lat/long coordinates of PSA boundary points
-# telling the tidy function that the region value can be found in the "PSA" variable
 psas.points <- tidy(psas, region="PSA")
 
 # combine lat/long coordinates of district boundary points with data about districts
-# tell join function that "id" in psas.points corresponds to "PSA" in psas@data
 psas.cart <- full_join(psas.points, psas@data, by=c("id" = "PSA"))
 ```
 
@@ -88,13 +86,11 @@ psas.cart <- full_join(psas.points, psas@data, by=c("id" = "PSA"))
 plot_data <- filter(sf_data,!is.na(District), Subject_Sex == 'Male'| Subject_Sex == 'Female')
 levels(plot_data$Subject_Sex) <- c('Male', 'Female')
 
-all_cats <- expand(plot_data,PSA,Year)
-
-plot_data <- summarize(group_by(plot_data, PSA,Year,Subject_Sex),reports=n())
-
-plot_data <- full_join(plot_data,all_cats,by=c("PSA","Year"))
-
-plot_data <- mutate(plot_data,reports=replace_na(reports,0))
+plot_data <- plot_data %>% 
+  group_by(plot_data, PSA,Year,Subject_Sex) %>% 
+  summarize(reports=n()) %>% 
+  full_join(all_cats,by=c("PSA","Year")) %>% 
+  mutate(plot_data,reports=replace_na(reports,0)) 
 
 names(plot_data)[1] <- "NAME"
 
@@ -118,8 +114,8 @@ ggplot() +
 
 ```{r plot 2, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
 # A panel of maps showing the number of stop and frisk reports in each police district faceted by age group
-plot_data <- filter(sf_data,!is.na(District), !Age_binned == "Unknown")
-plot_data$Age_binned <- factor(plot_data$Age_binned)
+plot_data <- filter(sf_data,!is.na(District), !Age_binned == "Unknown") %>% 
+  mutate(Age_binned = as.factor(Age_binned))
 
 levels(plot_data$District) <- c("First District","Second District",
                                 "Third District","Fourth District",
@@ -129,7 +125,6 @@ levels(plot_data$District) <- c("First District","Second District",
 all_cats <- expand(plot_data,District,Year)
 
 plot_data <-summarize(group_by(plot_data, District,Year, Age_binned, .drop=FALSE), reports=n())
-
 
 plot_data <- full_join(plot_data,all_cats,by=c("District","Year"))
 

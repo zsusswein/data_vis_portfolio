@@ -14,10 +14,10 @@ In this analysis, I looked at the role of various statistics on player salaries 
 library(tidyverse)
 
 # Data
-player_data <- read.csv("Master.csv")
-pitching_data <- read.csv("Pitching.csv")
-salary_data <- read.csv("Salaries.csv")
-inflation_index <- read.csv("inflation.csv")
+player_data <- read.csv("data/Master.csv")
+pitching_data <- read.csv("data/Pitching.csv")
+salary_data <- read.csv("data/Salaries.csv")
+inflation_index <- read.csv("data/inflation.csv")
 ```
 
 ```{r data processing}
