@@ -13,7 +13,7 @@ In this analysis, we[^1] were interested in exploring how income changes with he
 [^3]: We use the variable `HEREVER` to determine self-reported heroin use and the variable `IRPINC3` determine income bracket. `HEREVER` is either "Yes"", "No", or "NA"", and `IRPINC3` is split into seven brackets: less than \$10,000, every \$10,000 up to \$50,000, from \$50,000 to \$75,000, and more than \$75,000. A detailed description of all variables is available [here](https://www.icpsr.umich.edu/icpsrweb/NAHDAP/studies/36361/variables)
 
 ## Data
-The data are from the National Survey on Drug Use and Health , which is conducted annually by the Substance Abuse and Mental Health Services Administration (SAMHSA), an agency in the U.S. Department of Health and Human Services (DHHS).  More information about this survey can be found at [ICPSR's data archive page](http://www.icpsr.umich.edu/icpsrweb/ICPSR/series/64).
+The data are from the National Survey on Drug Use and Health, which is conducted annually by the Substance Abuse and Mental Health Services Administration (SAMHSA), an agency in the U.S. Department of Health and Human Services (HHS).  More information about this survey can be found at [ICPSR's data archive page](http://www.icpsr.umich.edu/icpsrweb/ICPSR/series/64).
 
 ```{r data_and_packages_load, message=F}
 # Libraries
@@ -29,40 +29,35 @@ remove(da36361.0001)
 ```
 
 ## Data Manipulation
+
 We excluded anyone that did not respond to the income or heroin-use questions.
+
 ```{r}
 #Defining user status
-heroin_user <- filter(data, HEREVER == "(1) Yes")
-non_user <- filter(data, HEREVER == "(2) No")
 
-#Combining data
-heroin_user$user_status <- "Heroin User"
-non_user$user_status <- "Non User"
-combined_data <- rbind(heroin_user,non_user)
-
-# Take percentages in each income bracket across heroin status
-summary_data_non_user <- summarize(group_by(non_user, IRPINC3, user_status),
-                                count=n())
-summary_data_non_user$percent <- summary_data_non_user$count/sum(summary_data_non_user$count)
-
-summary_data_heroin_user <- summarize(group_by(heroin_user, IRPINC3, user_status),
-                                  count=n())
-summary_data_heroin_user$percent <- summary_data_heroin_user$count/sum(summary_data_heroin_user$count)
-
-summary_data <- rbind(summary_data_non_user, summary_data_heroin_user)
+summary_by_income <- data %>% 
+  filter(!is.na(HEREVER)) %>%   # remove NAs
+  mutate(user = if_else(HEREVER == "(1) Yes", 1, 0),
+         non_user = if_else(HEREVER == "(2) No", 'Non-user', 'Heroin user')) %>% # create a new boolean value for use
+  group_by(IRPINC3, user, non_user) %>%   # first take the sum in each cell
+  select(user, non_user, IRPINC3) %>% 
+  summarize(count = n()) %>% 
+  ungroup() %>% 
+  group_by(user, non_user) %>%      # then regroup to take the mean across income
+  mutate(p = count / sum(count))
 ```
 We first classified our participants by their response to the question "Have you ever used heroin?"  A participant who responded `(1) Yes` is categorized as a `heroin_user` and a participant who responded `(2) No` is categorized as a `non_user`. We then found the percentage of total heroin users and non-users in each income bracket.
 
 ## Visual Display
 ```{r side_by_side}
 #Side-by-Side Bar Plot
-ggplot(summary_data)+
+ggplot(summary_by_income)+
     labs(title = "Income bracket distribution by user status",
        x="Income bracket", 
        y= "Proportion of user \n status in income bracket")+
   geom_bar(aes(x=IRPINC3,
-               fill=user_status,
-               y=percent),
+               fill=as.factor(non_user),
+               y=p),
            position="dodge",
            stat="identity")+ 
   scale_fill_manual(values=rep(c("red","blue")),
