@@ -17,14 +17,14 @@ Effective disease modeling is a poweful tool, allowing for targeting of scarce r
 
 ```{r, message=FALSE, warning = FALSE, include=TRUE, results="hide", echo=TRUE}
 library(tidyverse)
-susceptible_data <- read_csv("susceptible_time_series.csv") %>%
+susceptible_data <- read_csv("data/susceptible_time_series.csv") %>%
   rename(Time = X1)
-infected_data <- read_csv("infected_time_series.csv") %>%
+infected_data <- read_csv("data/infected_time_series.csv") %>%
   rename(Time = X1)
-resistant_data <- read_csv("resistant_time_series.csv") %>%
+resistant_data <- read_csv("data/resistant_time_series.csv") %>%
   rename(Time = X1)
 
-combined_data <- read_csv('combined_data.csv')
+combined_data <- read_csv('data/combined_data.csv')
 
 
 SIR_data <- full_join(susceptible_data, infected_data, by = "Time")
